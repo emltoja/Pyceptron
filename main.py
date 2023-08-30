@@ -4,4 +4,7 @@ import sys
 
 app = QApplication(sys.argv)
 wndw = Visualizer()
+# wndw.specimenRectangle(30, 30)
+wndw.specimenCircle(30, 30)
+wndw.show()
 sys.exit(app.exec_())

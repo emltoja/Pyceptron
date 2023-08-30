@@ -2,6 +2,7 @@ import numpy as np
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPainter, QColor
 from pyceptron import Perceptron
+from specimens import Generator
 
 
 class WeightsDisplayer(QWidget):
@@ -45,10 +46,18 @@ class WeightsDisplayer(QWidget):
 class Visualizer(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
-
         self.setWindowTitle("Pyceptron")
-        pycept = Perceptron(10, 10)
 
-        weightsDisplay = WeightsDisplayer(pycept.weights)
-        self.setCentralWidget(weightsDisplay)
-        self.show()
+    def perceptronWeights(self, p: Perceptron) -> None:
+        display = WeightsDisplayer(p.weights)
+        self.setCentralWidget(display)
+
+    def specimenRectangle(self, width, height) -> None:
+        g = Generator(width, height)
+        display = WeightsDisplayer(g.generate_rect())
+        self.setCentralWidget(display)
+
+    def specimenCircle(self, width, height) -> None:
+        g = Generator(width, height)
+        display = WeightsDisplayer(g.generate_circle())
+        self.setCentralWidget(display)
