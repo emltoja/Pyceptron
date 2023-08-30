@@ -1,6 +1,7 @@
 import numpy as np
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPainter, QColor
+from PyQt5.QtCore import Qt, QTimer
 from pyceptron import Perceptron
 from specimens import Generator
 
@@ -61,3 +62,41 @@ class Visualizer(QMainWindow):
         g = Generator(width, height)
         display = WeightsDisplayer(g.generate_circle())
         self.setCentralWidget(display)
+
+
+class PerceptronVisualizer(Visualizer):
+    def __init__(self, width, height) -> None:
+        
+        super().__init__()
+        gen = Generator(width, height)
+        trainingSet = []
+        for _ in range(500):
+            trainingSet.append((gen.generate_rect(), 0))
+            trainingSet.append((gen.generate_circle(), 1))
+        self.perceptron = Perceptron(width, height, trainingSet)
+        self.display = WeightsDisplayer(self.perceptron.weights)
+
+        self.button = QPushButton("Start Training")
+        self.button.clicked.connect(self.startTraining)
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.button, alignment=Qt.AlignTop)
+        layout.addWidget(self.display)
+
+        widget = QWidget()
+        widget.setLayout(layout)
+
+        self.setCentralWidget(widget)
+
+    def startTraining(self) -> None:
+
+        # print('ButtonClicked')
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.trainPerceptron)
+        self.timer.start(10)
+
+    def trainPerceptron(self) -> None:
+        # print('Training Going on')
+        self.perceptron.nextSpecimen()
+        self.display.colors = self.perceptron.weights
+        self.display.update()
