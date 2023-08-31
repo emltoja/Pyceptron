@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPainter, QColor
@@ -76,11 +77,22 @@ class PerceptronVisualizer(Visualizer):
         self.perceptron = Perceptron(width, height, trainingSet, trainingThreshold=1)
         self.display = WeightsDisplayer(self.perceptron.weights)
 
-        self.button = QPushButton("Start Training")
-        self.button.clicked.connect(self.startTraining)
+        self.trainingButton = QPushButton("Start training")
+        self.trainingButton.clicked.connect(self.startTraining)
+
+        self.saveButton = QPushButton("Save training results")
+        self.saveButton.clicked.connect(self.saveResults)
+
+        self.loadButton = QPushButton("Load last training result")
+        self.loadButton.clicked.connect(self.loadResults)
+
+        buttonLayout = QHBoxLayout()
+        buttonLayout.addWidget(self.trainingButton)
+        buttonLayout.addWidget(self.saveButton)
+        buttonLayout.addWidget(self.loadButton)
 
         layout = QVBoxLayout()
-        layout.addWidget(self.button, alignment=Qt.AlignTop)
+        layout.addLayout(buttonLayout)
         layout.addWidget(self.display)
 
         widget = QWidget()
@@ -88,11 +100,12 @@ class PerceptronVisualizer(Visualizer):
 
         self.setCentralWidget(widget)
 
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.trainPerceptron)
+
     def startTraining(self) -> None:
 
         # print('ButtonClicked')
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.trainPerceptron)
         self.timer.start(10)
 
     def trainPerceptron(self) -> None:
@@ -102,3 +115,29 @@ class PerceptronVisualizer(Visualizer):
             print('Timer stopped')
         self.display.colors = self.perceptron.weights
         self.display.update()
+
+    def saveResults(self) -> None:
+        
+        stoped = False
+        if self.timer.isActive():
+            self.timer.stop()
+            stoped = True
+
+        if not os.path.isdir(".\data"):
+            os.mkdir(".\data")
+        
+        with open(".\data\weights.npy", "wb") as f:
+            np.save(f, self.perceptron.weights)
+
+        if stoped:
+            self.timer.start(10)
+
+    def loadResults(self) -> None:
+        if self.timer.isActive():
+            self.timer.stop()
+        with open(".\data\weights.npy", "rb") as f:
+            self.perceptron.weights = np.load(f)
+        self.display.colors = self.perceptron.weights
+        self.display.update()
+
+        
