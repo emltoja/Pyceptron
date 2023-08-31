@@ -73,7 +73,7 @@ class PerceptronVisualizer(Visualizer):
         for _ in range(500):
             trainingSet.append((gen.generate_rect(), 0))
             trainingSet.append((gen.generate_circle(), 1))
-        self.perceptron = Perceptron(width, height, trainingSet)
+        self.perceptron = Perceptron(width, height, trainingSet, trainingThreshold=1)
         self.display = WeightsDisplayer(self.perceptron.weights)
 
         self.button = QPushButton("Start Training")
@@ -97,6 +97,8 @@ class PerceptronVisualizer(Visualizer):
 
     def trainPerceptron(self) -> None:
         # print('Training Going on')
-        self.perceptron.nextSpecimen()
+        if not self.perceptron.nextSpecimen():
+            self.timer.stop()
+            print('Timer stopped')
         self.display.colors = self.perceptron.weights
         self.display.update()

@@ -28,16 +28,19 @@ class Perceptron:
     def threshold(self, input: np.matrix) -> float:
         return np.sum(np.kron(self.weights, input)) + self.bias
 
-    def nextSpecimen(self) -> None:
+    def nextSpecimen(self) -> bool:
+        if self.currentSpecimen == self.trainingTime:
+            return 0
         sample = self.trainingSet[self.currentSpecimen]
         output = self.threshold(sample[0]) > 0
         diff = sample[1] - output
         self.accumError += np.abs(diff)
-        if self.accumError > self.trainingTime * self.trainingThreshold:
-            return
         for i in range(self.dims[0]):
             for j in range(self.dims[1]):
                 self.weights[i][j] += self.learningRate * diff * sample[0][i][j]
                 # print(self.weights[i][j])
         self.currentSpecimen += 1
+        if self.accumError > self.trainingTime * self.trainingThreshold:
+            return False
+        return True
 
