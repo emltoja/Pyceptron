@@ -36,9 +36,6 @@ class Perceptron:
     # Train the Perceptron on next specimen in training set
     def nextSpecimen(self) -> bool:
 
-        # Last specimen in the set. Finish training
-        if self.currentSpecimen == self.trainingTime:
-            return 0
         
         sample = self.trainingSet[self.currentSpecimen]
         output = self.threshold(sample[0]) > 0
@@ -51,6 +48,11 @@ class Perceptron:
                 self.weights[i][j] += self.learningRate * diff * sample[0][i][j]
 
         self.currentSpecimen += 1
+        
+        # Last specimen in the set. Finish training
+        if self.currentSpecimen == self.trainingTime - 1:
+            self.currentSpecimen = 0
+            return 0
         
         # If the training threshold has been passeed, then finish the training
         if self.accumError > self.trainingTime * self.trainingThreshold:

@@ -15,8 +15,8 @@ class WeightsDisplayer(QWidget):
         self.colors = weights
         self.num_rows, self.num_cols = np.shape(weights)
 
-        self.cell_width = 30
-        self.cell_height = 30
+        self.cell_width = 20
+        self.cell_height = 20
 
         self.setMinimumSize(
             self.num_cols * self.cell_width, self.num_rows * self.cell_height
@@ -91,7 +91,8 @@ class PerceptronVisualizer(Visualizer):
 
         # Attach perceptron and weights matrix display
         self.perceptron = Perceptron(width, height, trainingSet, trainingThreshold=1)
-        self.display = WeightsDisplayer(self.perceptron.weights)
+        self.weightsDisplay = WeightsDisplayer(self.perceptron.weights)
+        self.specimenDisplay = WeightsDisplayer(self.perceptron.trainingSet[self.perceptron.currentSpecimen][0])
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.trainPerceptron)
@@ -113,20 +114,27 @@ class PerceptronVisualizer(Visualizer):
         self.resetButton.clicked.connect(self.resetPerceptron)
 
 
+        # Layout for start/stop buttons
         controlLayout = QVBoxLayout()
         controlLayout.addWidget(self.startButton, alignment=Qt.AlignTop)
         controlLayout.addWidget(self.stopButton)
 
-
+        # Button layout
         buttonLayout = QHBoxLayout()
         buttonLayout.addLayout(controlLayout)
         buttonLayout.addWidget(self.saveButton)
         buttonLayout.addWidget(self.loadButton)
         buttonLayout.addWidget(self.resetButton)
 
+        # Display layout
+        displayLayout = QHBoxLayout()
+        displayLayout.addWidget(self.weightsDisplay)
+        displayLayout.addWidget(self.specimenDisplay)
+
+        # Main layout
         layout = QVBoxLayout()
         layout.addLayout(buttonLayout)
-        layout.addWidget(self.display)
+        layout.addLayout(displayLayout)
 
         widget = QWidget()
         widget.setLayout(layout)
@@ -144,8 +152,10 @@ class PerceptronVisualizer(Visualizer):
         if not self.perceptron.nextSpecimen():
             self.timer.stop()
             print('Timer stopped')
-        self.display.colors = self.perceptron.weights
-        self.display.update()
+        self.weightsDisplay.colors = self.perceptron.weights
+        self.weightsDisplay.update()
+        self.specimenDisplay.colors = self.perceptron.trainingSet[self.perceptron.currentSpecimen][0]
+        self.specimenDisplay.update()
 
     # Save training results into the file 
     def saveResults(self) -> None:
@@ -175,15 +185,15 @@ class PerceptronVisualizer(Visualizer):
         if file_name:
             with open(file_name, "rb") as f:
                 self.perceptron.weights = np.load(f)
-        self.display.colors = self.perceptron.weights
-        self.display.update()
+        self.weightsDisplay.colors = self.perceptron.weights
+        self.weightsDisplay.update()
 
     # Reset the Perceptron
     def resetPerceptron(self):
 
         self.perceptron.reset()
-        self.display.colors = self.perceptron.weights
-        self.display.update()
+        self.weightsDisplay.colors = self.perceptron.weights
+        self.weightsDisplay.update()
 
     
 
