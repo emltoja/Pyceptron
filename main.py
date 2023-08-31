@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QApplication
-from gui import Visualizer, PerceptronVisualizer
+from gui import PerceptronVisualizer
 import sys
 
 app = QApplication(sys.argv)

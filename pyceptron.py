@@ -1,8 +1,9 @@
 import numpy as np
-from typing import List, Tuple
 
 
 class Perceptron:
+
+    # Initialize the Perceptron
     def __init__(
         self,
         width,
@@ -22,24 +23,36 @@ class Perceptron:
         self.currentSpecimen = 0                            # Specimen currently used for training the Perceptron
         self.accumError = 0                                 # Error accumulated during training
 
+
+    # Restart the perceptron
     def reset(self) -> None:
         self.__init__()
 
+    # Linear output of the neuron
     def threshold(self, input: np.matrix) -> float:
         return np.sum(np.kron(self.weights, input)) + self.bias
 
+
+    # Train the Perceptron on next specimen in training set
     def nextSpecimen(self) -> bool:
+
+        # Last specimen in the set. Finish training
         if self.currentSpecimen == self.trainingTime:
             return 0
+        
         sample = self.trainingSet[self.currentSpecimen]
         output = self.threshold(sample[0]) > 0
         diff = sample[1] - output
         self.accumError += np.abs(diff)
+
+        # Update the weights
         for i in range(self.dims[0]):
             for j in range(self.dims[1]):
                 self.weights[i][j] += self.learningRate * diff * sample[0][i][j]
-                # print(self.weights[i][j])
+
         self.currentSpecimen += 1
+        
+        # If the training threshold has been passeed, then finish the training
         if self.accumError > self.trainingTime * self.trainingThreshold:
             return False
         return True

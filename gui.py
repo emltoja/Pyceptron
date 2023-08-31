@@ -8,6 +8,8 @@ from specimens import Generator
 
 
 class WeightsDisplayer(QWidget):
+
+    # Initialize the weights matrix in the main window
     def __init__(self, weights) -> None:
         super().__init__()
         self.colors = weights
@@ -20,6 +22,7 @@ class WeightsDisplayer(QWidget):
             self.num_cols * self.cell_width, self.num_rows * self.cell_height
         )
 
+    # Paint the matrix onto the screen
     def paintEvent(self, event) -> None:
         painter = QPainter(self)
 
@@ -36,6 +39,8 @@ class WeightsDisplayer(QWidget):
                     self.cell_height,
                 )
 
+
+    # Adjust the cell size if resized
     def resizeEvent(self, event) -> None:
         available_width = self.width()
         available_height = self.height()
@@ -45,38 +50,50 @@ class WeightsDisplayer(QWidget):
         self.update()
 
 
+# Main window 
 class Visualizer(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle("Pyceptron")
 
+    # Display given perceptron weights
     def perceptronWeights(self, p: Perceptron) -> None:
         display = WeightsDisplayer(p.weights)
         self.setCentralWidget(display)
 
+    # Display rectangular specimen
     def specimenRectangle(self, width, height) -> None:
         g = Generator(width, height)
         display = WeightsDisplayer(g.generate_rect())
         self.setCentralWidget(display)
 
+    # Display circular specimen
     def specimenCircle(self, width, height) -> None:
         g = Generator(width, height)
         display = WeightsDisplayer(g.generate_circle())
         self.setCentralWidget(display)
 
 
+# Main window with attached perceptron
 class PerceptronVisualizer(Visualizer):
+
+    # Initialize the window
     def __init__(self, width, height) -> None:
         
         super().__init__()
         gen = Generator(width, height)
+
+        # Generate the training set
         trainingSet = []
         for _ in range(500):
             trainingSet.append((gen.generate_rect(), 0))
             trainingSet.append((gen.generate_circle(), 1))
+
+        # Attach perceptron and weights matrix display
         self.perceptron = Perceptron(width, height, trainingSet, trainingThreshold=1)
         self.display = WeightsDisplayer(self.perceptron.weights)
 
+        # Utilities buttons
         self.trainingButton = QPushButton("Start training")
         self.trainingButton.clicked.connect(self.startTraining)
 
@@ -103,19 +120,21 @@ class PerceptronVisualizer(Visualizer):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.trainPerceptron)
 
+    # Begin training of the Perceptron
     def startTraining(self) -> None:
 
-        # print('ButtonClicked')
         self.timer.start(10)
 
+    # Training routine
     def trainPerceptron(self) -> None:
-        # print('Training Going on')
+
         if not self.perceptron.nextSpecimen():
             self.timer.stop()
             print('Timer stopped')
         self.display.colors = self.perceptron.weights
         self.display.update()
 
+    # Save training results into the file 
     def saveResults(self) -> None:
         
         stoped = False
@@ -132,6 +151,7 @@ class PerceptronVisualizer(Visualizer):
         if stoped:
             self.timer.start(10)
 
+    # Load perceptron weights from the file
     def loadResults(self) -> None:
         if self.timer.isActive():
             self.timer.stop()
