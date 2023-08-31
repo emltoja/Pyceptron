@@ -93,9 +93,15 @@ class PerceptronVisualizer(Visualizer):
         self.perceptron = Perceptron(width, height, trainingSet, trainingThreshold=1)
         self.display = WeightsDisplayer(self.perceptron.weights)
 
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.trainPerceptron)
+
         # Utilities buttons
-        self.trainingButton = QPushButton("Start training")
-        self.trainingButton.clicked.connect(self.startTraining)
+        self.startButton = QPushButton("Start training")
+        self.startButton.clicked.connect(self.startTraining)
+
+        self.stopButton = QPushButton("Stop training")
+        self.stopButton.clicked.connect(self.timer.stop)
 
         self.saveButton = QPushButton("Save training results")
         self.saveButton.clicked.connect(self.saveResults)
@@ -103,10 +109,20 @@ class PerceptronVisualizer(Visualizer):
         self.loadButton = QPushButton("Load last training result")
         self.loadButton.clicked.connect(self.loadResults)
 
+        self.resetButton = QPushButton("Reset Perceptron")
+        self.resetButton.clicked.connect(self.resetPerceptron)
+
+
+        controlLayout = QVBoxLayout()
+        controlLayout.addWidget(self.startButton, alignment=Qt.AlignTop)
+        controlLayout.addWidget(self.stopButton)
+
+
         buttonLayout = QHBoxLayout()
-        buttonLayout.addWidget(self.trainingButton)
+        buttonLayout.addLayout(controlLayout)
         buttonLayout.addWidget(self.saveButton)
         buttonLayout.addWidget(self.loadButton)
+        buttonLayout.addWidget(self.resetButton)
 
         layout = QVBoxLayout()
         layout.addLayout(buttonLayout)
@@ -116,9 +132,6 @@ class PerceptronVisualizer(Visualizer):
         widget.setLayout(layout)
 
         self.setCentralWidget(widget)
-
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.trainPerceptron)
 
     # Begin training of the Perceptron
     def startTraining(self) -> None:
@@ -142,11 +155,12 @@ class PerceptronVisualizer(Visualizer):
             self.timer.stop()
             stoped = True
 
-        if not os.path.isdir(".\data"):
-            os.mkdir(".\data")
-        
-        with open(".\data\weights.npy", "wb") as f:
-            np.save(f, self.perceptron.weights)
+        options = QFileDialog.Options()
+        file_name, _ = QFileDialog.getSaveFileName(self, "Save Data", "", "Numpy array (*.npy);;All Files(*)", options=options)
+
+        if file_name:
+            with open(file_name, "wb") as f:
+                np.save(f, self.perceptron.weights)
 
         if stoped:
             self.timer.start(10)
@@ -155,9 +169,22 @@ class PerceptronVisualizer(Visualizer):
     def loadResults(self) -> None:
         if self.timer.isActive():
             self.timer.stop()
-        with open(".\data\weights.npy", "rb") as f:
-            self.perceptron.weights = np.load(f)
+        options = QFileDialog.Options()
+        file_name, _ = QFileDialog.getOpenFileName(self, "Load Data", "", "Numpy array (*.npy);;All Files(*)", options=options)
+
+        if file_name:
+            with open(file_name, "rb") as f:
+                self.perceptron.weights = np.load(f)
         self.display.colors = self.perceptron.weights
         self.display.update()
+
+    # Reset the Perceptron
+    def resetPerceptron(self):
+
+        self.perceptron.reset()
+        self.display.colors = self.perceptron.weights
+        self.display.update()
+
+    
 
         

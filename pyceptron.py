@@ -26,7 +26,7 @@ class Perceptron:
 
     # Restart the perceptron
     def reset(self) -> None:
-        self.__init__()
+        self.__init__(*self.dims, self.trainingSet, self.bias, self.learningRate, self.trainingThreshold)
 
     # Linear output of the neuron
     def threshold(self, input: np.matrix) -> float:
