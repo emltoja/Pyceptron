@@ -1,4 +1,3 @@
-import os
 import numpy as np
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPainter, QColor
@@ -155,7 +154,7 @@ class PerceptronVisualizer(Visualizer):
 
         if not self.perceptron.nextSpecimen():
             self.timer.stop()
-            print('Timer stopped')
+            print('Training stopped')
         self.weightsDisplay.colors = self.perceptron.weights
         self.weightsDisplay.update()
         self.specimenDisplay.colors = self.perceptron.trainingSet[self.perceptron.currentSpecimen][0]
