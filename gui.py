@@ -85,7 +85,7 @@ class PerceptronVisualizer(Visualizer):
 
         # Generate the training set
         trainingSet = []
-        for _ in range(500):
+        for _ in range(1000):
             trainingSet.append((gen.generate_rect(), 0))
             trainingSet.append((gen.generate_circle(), 1))
 
@@ -119,11 +119,15 @@ class PerceptronVisualizer(Visualizer):
         controlLayout.addWidget(self.startButton, alignment=Qt.AlignTop)
         controlLayout.addWidget(self.stopButton)
 
+        # Layout for saving/loading buttons
+        saveloadLayout = QVBoxLayout()
+        saveloadLayout.addWidget(self.saveButton, alignment=Qt.AlignTop)
+        saveloadLayout.addWidget(self.loadButton)
+
         # Button layout
         buttonLayout = QHBoxLayout()
         buttonLayout.addLayout(controlLayout)
-        buttonLayout.addWidget(self.saveButton)
-        buttonLayout.addWidget(self.loadButton)
+        buttonLayout.addLayout(saveloadLayout)
         buttonLayout.addWidget(self.resetButton)
 
         # Display layout
