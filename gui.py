@@ -1,5 +1,7 @@
+'''Pyceptron gui'''
+
 import numpy as np
-from PyQt5.QtWidgets import *
+from PyQt5.QtWidgets import QWidget, QMainWindow, QPushButton, QHBoxLayout, QVBoxLayout, QFileDialog
 from PyQt5.QtGui import QPainter, QColor
 from PyQt5.QtCore import Qt, QTimer
 from pyceptron import Perceptron
@@ -7,6 +9,7 @@ from specimens import Generator
 
 
 class WeightsDisplayer(QWidget):
+    '''Display the weights or specimen as rectangular cell matrix'''
 
     # Initialize the weights matrix in the main window
     def __init__(self, weights) -> None:
@@ -49,7 +52,7 @@ class WeightsDisplayer(QWidget):
         self.update()
 
 
-# Main window 
+# Main window
 class Visualizer(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
@@ -78,7 +81,7 @@ class PerceptronVisualizer(Visualizer):
 
     # Initialize the window
     def __init__(self, width, height) -> None:
-        
+
         super().__init__()
         gen = Generator(width, height)
 
@@ -91,7 +94,8 @@ class PerceptronVisualizer(Visualizer):
         # Attach perceptron and weights matrix display
         self.perceptron = Perceptron(width, height, trainingSet, trainingThreshold=1)
         self.weightsDisplay = WeightsDisplayer(self.perceptron.weights)
-        self.specimenDisplay = WeightsDisplayer(self.perceptron.trainingSet[self.perceptron.currentSpecimen][0])
+        currentSpecimen = self.perceptron.trainingSet[self.perceptron.currentSpecimen][0]
+        self.specimenDisplay = WeightsDisplayer(currentSpecimen)
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.trainPerceptron)
@@ -157,7 +161,8 @@ class PerceptronVisualizer(Visualizer):
             print('Training stopped')
         self.weightsDisplay.colors = self.perceptron.weights
         self.weightsDisplay.update()
-        self.specimenDisplay.colors = self.perceptron.trainingSet[self.perceptron.currentSpecimen][0]
+        currentSpecimen = self.perceptron.trainingSet[self.perceptron.currentSpecimen][0]
+        self.specimenDisplay.colors = currentSpecimen
         self.specimenDisplay.update()
 
     # Save training results into the file 
@@ -169,7 +174,9 @@ class PerceptronVisualizer(Visualizer):
             stoped = True
 
         options = QFileDialog.Options()
-        file_name, _ = QFileDialog.getSaveFileName(self, "Save Data", "", "Numpy array (*.npy);;All Files(*)", options=options)
+        file_name, _ = QFileDialog.getSaveFileName(
+            self, "Save Data", "", "Numpy array (*.npy);;All Files(*)", options=options
+        )
 
         if file_name:
             with open(file_name, "wb") as f:
@@ -183,7 +190,9 @@ class PerceptronVisualizer(Visualizer):
         if self.timer.isActive():
             self.timer.stop()
         options = QFileDialog.Options()
-        file_name, _ = QFileDialog.getOpenFileName(self, "Load Data", "", "Numpy array (*.npy);;All Files(*)", options=options)
+        file_name, _ = QFileDialog.getOpenFileName(
+            self, "Load Data", "", "Numpy array (*.npy);;All Files(*)", options=options
+        )
 
         if file_name:
             with open(file_name, "rb") as f:
@@ -197,7 +206,3 @@ class PerceptronVisualizer(Visualizer):
         self.perceptron.reset()
         self.weightsDisplay.colors = self.perceptron.weights
         self.weightsDisplay.update()
-
-    
-
-        
