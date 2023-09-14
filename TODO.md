@@ -1,6 +1,7 @@
 # TODO 
 
-* Implement perceptron evaluation mode
-* Implement global ```--version``` option
+* Implement perceptron evaluation mode with specimens
+* Improve training
+* Low acceptance rate
   
   
