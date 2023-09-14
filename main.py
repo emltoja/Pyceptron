@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QApplication
-from gui import PerceptronVisualizer
+from gui import PerceptronTrainingVisualizer, PerceptronEvaluationVisualizer
 import typer
 import sys
 
@@ -10,13 +10,18 @@ typerApp = typer.Typer()
 @typerApp.command()
 def train(): 
     app = QApplication(sys.argv)
-    wndw = PerceptronVisualizer(30, 30)
+    wndw = PerceptronTrainingVisualizer(50, 50)
     wndw.show()
     sys.exit(app.exec_())
 
 @typerApp.command()
 def run():
-    raise NotImplementedError("Evaluation mode not implemented yet.")
+    # raise NotImplementedError("Evaluation mode not implemented yet.")
+    app = QApplication(sys.argv)
+    wndw = PerceptronEvaluationVisualizer(50, 50)
+    wndw.show()
+    sys.exit(app.exec_())
+    
 
 
 if __name__ == "__main__":

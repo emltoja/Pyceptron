@@ -1,7 +1,8 @@
 '''Pyceptron gui'''
 
+from PyQt5 import QtGui
 import numpy as np
-from PyQt5.QtWidgets import QWidget, QMainWindow, QPushButton, QHBoxLayout, QVBoxLayout, QFileDialog
+from PyQt5.QtWidgets import QWidget, QTextEdit, QMainWindow, QPushButton, QHBoxLayout, QVBoxLayout, QFileDialog
 from PyQt5.QtGui import QPainter, QColor
 from PyQt5.QtCore import Qt, QTimer
 from pyceptron import Perceptron
@@ -17,8 +18,8 @@ class WeightsDisplayer(QWidget):
         self.colors = weights
         self.num_rows, self.num_cols = np.shape(weights)
 
-        self.cell_width = 20
-        self.cell_height = 20
+        self.cell_width = 15
+        self.cell_height = 15
 
         self.setMinimumSize(
             self.num_cols * self.cell_width, self.num_rows * self.cell_height
@@ -52,6 +53,32 @@ class WeightsDisplayer(QWidget):
         self.update()
 
 
+# Sandbox Widget
+class SandboxDisplayer(WeightsDisplayer):
+
+    def __init__(self, width, height) -> None:
+        super().__init__(np.zeros((width, height)))
+        self.mouse_pressed = False
+
+    
+    def mousePressEvent(self, event) -> None:
+       self.mouse_pressed = True
+       self.updateCellColor(event)
+
+    def mouseMoveEvent(self, event) -> None:
+        if self.mouse_pressed:
+            self.updateCellColor(event)
+
+    def mouseReleaseEvent(self, event) -> None:
+        self.mouse_pressed = False
+
+    def updateCellColor(self, event):
+        col = event.x() // self.cell_width
+        row = event.y() // self.cell_height
+        if 0 <= row < self.num_rows and 0 <= col < self.num_cols:
+            self.colors[row][col] = 1
+            self.update()
+
 # Main window
 class Visualizer(QMainWindow):
     def __init__(self) -> None:
@@ -77,7 +104,7 @@ class Visualizer(QMainWindow):
 
 
 # Main window with attached perceptron
-class PerceptronVisualizer(Visualizer):
+class PerceptronTrainingVisualizer(Visualizer):
 
     # Initialize the window
     def __init__(self, width, height) -> None:
@@ -206,3 +233,95 @@ class PerceptronVisualizer(Visualizer):
         self.perceptron.reset()
         self.weightsDisplay.colors = self.perceptron.weights
         self.weightsDisplay.update()
+
+
+
+
+class PerceptronEvaluationVisualizer(Visualizer):
+
+    # Initialize the window
+    def __init__(self, width, height) -> None:
+
+        super().__init__()
+        
+        self.w = width
+        self.h = height
+
+        # Attach perceptron and weights matrix display
+        self.perceptron = Perceptron(width, height, None, trainingThreshold=1)
+        self.weightsDisplay = WeightsDisplayer(self.perceptron.weights)
+        self.sandbox = SandboxDisplayer(width, height)    # Zero-initialized sandbox
+
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.evaluate)
+
+        # Utilities button
+        self.loadButton = QPushButton("Load last training result")
+        self.loadButton.clicked.connect(self.loadResults)
+
+        self.clearButton = QPushButton("Clear sandbox")
+        self.clearButton.clicked.connect(self.clearSandbox)
+
+        # Button layout
+        self.buttonLayout = QHBoxLayout()
+        self.buttonLayout.addWidget(self.loadButton)
+        self.buttonLayout.addWidget(self.clearButton)
+
+        # Display layout
+        self.displayLayout = QHBoxLayout()
+        self.displayLayout.addWidget(self.weightsDisplay)
+        self.displayLayout.addWidget(self.sandbox)
+
+        # Text window for results
+        self.resultWindow = QTextEdit()
+        self.resultWindow.setAlignment(Qt.AlignCenter)
+
+        # Main layout
+        self.mainLayout = QVBoxLayout()
+        self.mainLayout.addLayout(self.buttonLayout)
+        self.mainLayout.addWidget(self.resultWindow)
+        self.mainLayout.addLayout(self.displayLayout)
+
+        self.widget = QWidget()
+        self.widget.setLayout(self.mainLayout)
+
+        self.setCentralWidget(self.widget)
+        self.timer.start(1000)
+
+
+    # Evaluation
+    def evaluate(self) -> None:
+        result = self.perceptron.evaluate(self.sandbox.colors)
+        print(self.sandbox.colors)
+        self.resultWindow.setText("RECTANGLE" if not result else "CIRCLE")
+        self.resultWindow.update()
+        
+
+    # Load perceptron weights from the file
+    def loadResults(self) -> None:
+        if self.timer.isActive():
+            self.timer.stop()
+        options = QFileDialog.Options()
+        file_name, _ = QFileDialog.getOpenFileName(
+            self, "Load Data", "", "Numpy array (*.npy);;All Files(*)", options=options
+        )
+
+        if file_name:
+            with open(file_name, "rb") as f:
+                self.perceptron.weights = np.load(f)
+        self.weightsDisplay.colors = self.perceptron.weights
+        self.weightsDisplay.update()
+        print(self.perceptron.weights)
+        self.timer.start()
+
+    # Clear the sandbox
+    def clearSandbox(self):
+
+        self.resultWindow.setText("")
+        self.resultWindow.update()
+        self.sandbox.colors = np.zeros((self.w, self.h))
+        self.sandbox.update()
+
+
+    
+
