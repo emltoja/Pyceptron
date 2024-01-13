@@ -13,7 +13,6 @@ class Generator:
         y = np.random.randint(0, self.dims[1] - rectHeight)
 
         specimen = np.zeros(self.dims)
-        specimen -= 1
 
         # Upper and lower bound
         for i in range(x, x + rectWidth + 1):
@@ -34,7 +33,6 @@ class Generator:
         y = np.random.randint(radius, self.dims[1] - radius)
 
         specimen = np.zeros(self.dims)
-        specimen -= 1
 
         for i in range(0, 100):
             angle = 0.02 * np.pi * i
